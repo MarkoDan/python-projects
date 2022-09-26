@@ -74,6 +74,14 @@ class FrontEnd:
         self.filter_image = cv2.imread(self.filename)
 
         self.display_image(self.original_image)
+    
+    def text_action_1(self):
+        self.text_extracted = "hello"
+        self.refresh_side_frame()
+        ttk.Label(self.side_frame, text="Enter the text").grid(row=0, column=2, padx=5, pady=5, sticky='sw')
+        self.text_on_image = ttk.Entry(self.side_frame)
+        self.text_on_image.grid(row=1, column=2, padx=5, sticky='sw')
+        ttk.Button(self.side_frame, text="Pick a font color", command=self.choose_color).grid(row=2, column=2, padx=5, pady=5, sticky='sw')
 
     def crop_action(self):
         self.rectagle_id = 0
@@ -129,6 +137,37 @@ class FrontEnd:
         self.crop_end_y = 0
         self.canvas.bind("<ButtonPress>", self.start_crop)
         self.canvas.bind("<B1-Motion>", self.crop)
+        self.canvas.bind("<ButtonRelease>", self.end_text_crop)
+    
+    def end_text_crop(self, event):
+        if self.crop_start_x <= self.crop_end_x and self.crop_start_y <= self.crop_end_y:
+            start_x = int(self.crop_start_x * self.ratio)
+            start_y = int(self.crop_start_y * self.ratio)
+            end_x = int(self.crop_end_x * self.ratio)
+            end_y = int(self.crop_end_y * self.ratio)
+        elif self.crop_end_x > self.crop_end_x and self.crop_start_y <= self.crop_end_y:
+            start_x = int(self.crop_end_x * self.ratio)
+            start_y = int(self.crop_start_y * self.ratio)
+            end_x = int(self.crop_start_x * self.ratio)
+            end_y = int(self.crop_end_y * self.ratio)
+        elif self.crop_start_x <= self.crop_end_x and self.crop_start_y > self.crop_end_y:
+            start_x = int(self.crop_start_x * self.ratio)
+            start_y = int(self.crop_end_y * self.ratio)
+            end_x = int(self.crop_end_x, * self.ratio)
+            end_y = int(self.crop_start_y * self.ratio)
+        else:
+            start_x = int(self.crop_end_x * self.ratio)
+            start_y = int(self.crop_end_y * self.ratio)
+            end_x = int(self.crop_start_x * self.ratio)
+            end_y= int(self.crop_start_y * self.ratio)
+        if self.text_on_image.get():
+            self.text_extracted = self.text_on_image.get()
+        start_font = start_x, start_y
+
+        r, g, b = tuple(map(int, self.color_code[0]))
+
+        self.filtered_image = cv2.putText(self.edited_image, self.text_extracted, start_font, cv2.FONT_HERSHEY_SIMPLEX, 2, (b, g, r), 5)
+        self.display_image(self.filtered_image)
 
     def draw_action(self):
         self.color_code = ((255,0,0), '#ff0000')
@@ -206,7 +245,14 @@ class FrontEnd:
         ttk.Button(self.side_frame, text="Vertical Flip", command=self.vertical_action).grid(row=0, column=2, padx=5)
         ttk.Button(self.side_frame, text="Horizontal Flip", command=self.horizontal_action).grid(row=1, column=2, padx=5)
     def save_action(self):
-        pass 
+        original_file_type = self.filename.split('.')[-1]
+        filename = filedialog.askopenfilename()
+        filename = filedialog.askopenfilename()
+        filename = filename + "." + original_file_type
+
+        save_as_image = self.edited_image
+        cv2.imwrite(filename, save_as_image)
+        self.filename = filename 
     
     #Footer Frame Functions
     def apply_action(self):
