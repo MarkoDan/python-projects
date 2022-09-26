@@ -1,5 +1,7 @@
+from audioop import lin2adpcm
 from dataclasses import field
-from tkinter import HORIZONTAL, RIDGE, Canvas, Scale, filedialog, ttk, Tk, PhotoImage, RIDGE, GROOVE
+from tkinter import HORIZONTAL, RIDGE, Canvas, Scale, filedialog, ttk, Tk, PhotoImage, RIDGE, GROOVE, colorchooser, ROUND
+from turtle import title
 import cv2
 from PIL import Image, ImageTk
 import numpy as np
@@ -74,17 +76,88 @@ class FrontEnd:
         self.display_image(self.original_image)
 
     def crop_action(self):
-        self.refresh_side_frame()
-        ttk.Label(self.side_frame, text="Crop the image").grid(row=0, column=0)
+        self.rectagle_id = 0
+        self.crop_start_x = 0
+        self.crop_start_y = 0
+        self.crop_end_x = 0
+        self.crop_end_y = 0
+        self.canvas.bind("<ButtonPress>",self.start_crop)
+        self.canvas.bind("<B1-Motion>", self.crop)
+        self.canvas.bind("<ButtonRelease>", self.end_crop)    
     
-    def text_action_1(self):
-        self.refresh_side_frame()
-        ttk.Label(self.side_frame, text="Please enter a text").grid(row=0, column=0)
+    def start_crop(self,event):
+        self.crop_start_x = event.x
+        self.crop_end_y = event.y
+
+    def crop(self,event):
+        if self.rectagle_id:
+            self.canvas.delete(self.rectagle_id)
+        
+        self.crop_end_x = event.x
+        self.crop_end_y = event.y
+
+        self.rectagle_id = self.canvas.create_rectangle(self.crop_start_x, self.crop_end_y, self.crop_end_x, self.crop_end_y, width=1)
+
+    def end_crop(self, event):
+        if self.crop_start_x <= self.crop_end_x and self.crop_start_y <= self.crop_end_y:
+            start_x = int(self.crop_start_x * self.ratio)
+            start_y = int(self.crop_start_y * self.ratio)
+            end_x = int(self.crop_end_x * self.ratio)
+            end_y = int(self.crop_end_y * self.ratio)
+        elif self.crop_start_x > self.crop_end_x and self.crop_start_y <= self.crop_end_y:
+            start_x = int(self.crop_end_x * self.ratio)
+            start_y = int(self.crop_start_y * self.ratio)
+            end_x = int(self.crop_end_x * self.ratio)
+            end_y = int(self.crop_end_y * self.ratio)
+        else:
+            start_x = int(self.crop_end_x * self.ratio)
+            start_y = int(self.crop_end_y * self.ratio)
+            end_x = int(self.crop_start_x * self.ratio)
+            end_y = int(self.crop_end_y * self.ratio)
+        
+        x = slice(start_x, end_x, 1)
+        y = slice(start_y, end_y, 1)
+
+        self.filtered_image = self.edited_image[y, x]
+        self.display_image(self.filtered_image)
+    
+    def text_action(self):
+        self.rectagle_id = 0
+        self.crop_start_x = 0
+        self.crop_end_y = 0
+        self.crop_end_x = 0
+        self.crop_end_y = 0
+        self.canvas.bind("<ButtonPress>", self.start_crop)
+        self.canvas.bind("<B1-Motion>", self.crop)
 
     def draw_action(self):
+        self.color_code = ((255,0,0), '#ff0000')
         self.refresh_side_frame()
-        ttk.Label(self.side_frame, text="Draw on Image").grid(row=0, column=0)
+        self.canvas.bind("<ButtonPress>",self.start_draw)
+        self.canvas.bind("<B1-Motion>", self.draw)
+        self.draw_color_button = ttk.Button(self.side_frame, text="Pick a Color", command=self.choose_color)
+        self.draw_color_button.grid(row=0, column=2, padx=5, pady=5, sticky='sw')
 
+    def choose_color(self):
+        self.color_code = colorchooser.askcolor(title="Choose color")
+    
+    def start_draw(self, event):
+        self.x = event.x
+        self.y = event.y
+        self.draw_ids = []
+    
+    def draw(self,event):
+        print(self.draw_ids)
+        self.draw_ids.append(self.canvas.create_line(self.x, self.y, self.x, event.y, width=2, fill=self.color_code[-1], capstyle=ROUND, smooth=True ))
+
+        cv2.line(self.filter_image, (int(self.x * self.ratio), int(self.y * self.ratio)),
+        (int(event.x * self.ratio), int(event.y * self.ration)),
+        (0, 0, 255), thickness=int(self.ratio * 2),
+        lineType=8)
+
+        self.x = event.x
+        self.y = event.y
+    
     def filter_action(self):
         self.refresh_side_frame()
         ttk.Button(self.side_frame, text="Negative", command=self.negative_action).grid(row=0, column=2, padx=5, pady=5)
