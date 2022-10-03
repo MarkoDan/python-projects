@@ -1,33 +1,42 @@
+import random
+import sys
 
+purse = 5000
+while True:
+    print(f'You have {purse} how much you want to bet? (q for QUIT)')
+    pot = input('> ')
+    if pot == 'q':
+        sys.exit()
+    elif not pot.isdecimal():
+        print('Please enter a number')
+    elif int(pot) > purse:
+        print('You do not have enough to make that bet.')
+    else:
+        pot = int(pot)
+        break
+    
+    #Roll the dice
+dice1 = random.randint(1,6)
+dice2 = random.randint(1,6)
 
-def deposit():
-    while True:
-        deposit = input("How much would you like to deposit? $")
-        if deposit.isdigit():
-            deposit = int(deposit)
-            if deposit > 0:
-                break
-            else:
-                print("The deposit must be greated than 0")
-        else:
-            print("Please enter a number")
+print('CHO (even) or HAN (odd)?')
+bet = input("> ")
+while True:
+    if bet != "CHO" or bet != "HAN":
+        print('Please enter a valid input')
+        continue
+    else:
+        break
+print(f'The first dice: {dice1}: ')
+print(f'The second dice: {dice2}')
 
+rolls_even = (dice1 + dice2) % 2 == 0
+if rolls_even:
+    correctBet = 'CHO'
+else:
+    correctBet = 'HAN'
 
-def get_bet():
-    while True:
-        amount = input("How much would you like to bet?")
-        if amount.isdigit():
-            amount = int(amount)
-            if amount > 0:
-                break
-            else:
-                print("Enter a valid amount")
-        else:
-            print("Please enter a number")
+playerWon = bet == correctBet
 
-
-def main():
-    balance = deposit()
-    bet = get_bet()
-
-
+if playerWon:
+    print('You won')
