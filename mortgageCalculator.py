@@ -1,5 +1,5 @@
 
-def bank_loan():
+def principle():
     while True:
         loan = input('Please enter the amount of your loan: ')
         if loan.isdecimal():
@@ -8,7 +8,7 @@ def bank_loan():
             print('Please enter valid number.')
     return int(loan)
 
-def fixed_rate():
+def how_many_years():
     while True:
         rate = input('Please enter the number of years, that you will pay out your loan: ')
         if rate.isdecimal():
@@ -17,19 +17,30 @@ def fixed_rate():
             print('Please enter a valid number.')
     return int(rate)
 
+def interest_rate():
+    while True:
+        interest_rate = input('Please enter the interest rate: ')
+        if interest_rate.isdecimal():
+            break
+        else:
+            print('Please enter valid interest_rate')
+    return int(interest_rate)
 
+def calculate_mortgage():
+    p =  principle()
+    years = how_many_years()
+    r = interest_rate()
+    r = (r / 100) / 12
+    n = 12 * years
+    m1 = p * r * (1 + r) ** n
+    m2 = (1 + r) ** n -1
+    m = m1 / m2
+    return m
 def main():
     while True:
         print('Welcome to Mortgage Calculator')
-        loan = bank_loan()
-        rate = fixed_rate()
-        anual_mortgage = loan / rate
-        monthly_mortgage = anual_mortgage / 12
-        user_choise = input('Please enter M for Monthly Mortgage or enter A for anual.')
-        if user_choise == "M":
-            print(f'Your monthly mortgage will be {monthly_mortgage}$')
-        elif user_choise == "A":
-            print(f"Your anual mortgage will be {anual_mortgage}$")
+        mortgage = calculate_mortgage()
+        print(f"Your monthly mortgage is {mortgage}$")
 
     
 main()
